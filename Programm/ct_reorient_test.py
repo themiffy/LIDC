@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 import glob
 import numpy as np
-from dicomVolume import DicomVolume
+from dicomVolume import DicomVolumeSPECT, DicomVolumeCT
 
 filenames = glob.glob('LUNG_SPECT_CT/DICOM/17102719/25530000/*') # выбираю папку и записываю имена файлов
 i = 0
@@ -15,14 +15,14 @@ for file in filenames:
     i += 1
 
 
-print(f"Filenames: {i}, Dataset consists of: {len(ar_dicoms)}")
+print(f"Filenames: {i}, Dataset consists of: {len(ar_dicoms)}", '\n')
 inst = [[],[],[],[]] # inst[Номер серии][Номер файла в ar_dicoms]
 for i, element in enumerate(ar_dicoms): # У всех файлов StudyID совпадает и равен 1
     if element.Modality == 'CT':
         if element.SeriesNumber < 5:
             inst[element.SeriesNumber].append(i)
 
-print(len(inst[1]), len(inst[2]), len(inst[3])) # series number 1 - 1 изображение, 2 - 63 изображения, 3 - 127 изоб
+print(len(inst[1]), len(inst[2]), len(inst[3]), '\n') # series number 1 - 1 изображение, 2 - 63 изображения, 3 - 127 изоб
 
 #plt.imshow(ar_dicoms[inst[3][30]].pixel_array) # Первая серия - рентген Вторая - какая то мыльная томография Третья - норм
 #plt.show()
@@ -40,7 +40,7 @@ for el in temp:
 
 
 
-ct = DicomVolume(slices[1], slices[0]) # создал объект CT
+ct = DicomVolumeCT(slices[1], slices[0]) # создал объект CT
 '''
 a = plt.subplot()
 plt.imshow(ct.sagittal[30])
@@ -49,7 +49,7 @@ plt.show()
 '''
 slices2 = dicom.dcmread('LUNG_SPECT_CT/DICOM/17102719/25530000/77306389')
 
-SPECT = DicomVolume(slices2.pixel_array, slices2)
+SPECT = DicomVolumeSPECT(slices2.pixel_array, slices2)
 '''
 b = plt.subplot()
 plt.imshow(SPECT.sagittal[30])
@@ -57,8 +57,14 @@ b.set_aspect(SPECT.sagittal_aspect)
 plt.show()
 '''
 from analysis import analyze
-analyze(ct, SPECT)
-print(SPECT.meta)
+print(analyze(ct, SPECT))
+
 
 #print(ct.meta) # SPECT Reconstruction Diameter             DS: '613.78558349609'
 # CT Reconstruction Diameter             DS: '366.0'
+
+#print(ct.meta, '\n')
+#print(SPECT.meta.Rows * SPECT.meta.PixelSpacing[0], '\n') # PixelSpacing
+#print(ct.meta.Rows * ct.meta.PixelSpacing[0])
+#print(SPECT.meta[0x0020, 0x0032]) # ImagePositionPatient
+#print(SPECT.meta.DetectorInformationSequence[0].ImagePositionPatient)

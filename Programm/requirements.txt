@@ -3,6 +3,8 @@ Tensorflow Version 2.6.2 / (2.7.0?)
 
 tkinter ?
 
+git push private master - это репозиторий LIDC
+
 повернуть изображения - https://stackoverflow.com/questions/57497695/2d-x-ray-reconstruction-from-3d-dicom-images
 
 Набор данных LUNG_SPECT_CT содержит 199 Dicom файлов, где: 
