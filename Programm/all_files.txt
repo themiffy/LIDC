@@ -1,0 +1,5 @@
+@echo off 
+set name = Hello World 
+echo %message%
+
+for %f in (*.ogf) do call ogf2obj -i "%~f"  "%~nf.obj"
