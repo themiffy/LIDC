@@ -64,3 +64,15 @@ class DicomVolumeSPECT():
         self.sagittal = np.rot90(self.sagittal, axes = (2, 1), k = 2)
         self.axial = np.rot90(self.axial, axes = (2, 1), k = 2)
         # преобразовать pixel_array
+
+class aCT():
+    def __init__(self):
+        self.coronal = []
+        self.axial = []
+        self.sagittal = []
+
+class aSPECT():
+    def __init__(self):
+        self.coronal = []
+        self.axial = []
+        self.sagittal = []

@@ -56,9 +56,19 @@ plt.imshow(SPECT.sagittal[30])
 b.set_aspect(SPECT.sagittal_aspect)
 plt.show()
 '''
-from analysis import analyze
+from analysis import analyze, align
 print(analyze(ct, SPECT))
+a_CT, a_SPECT = align(ct, SPECT)
 
+b = plt.subplot()
+plt.imshow(a_CT.axial[80])
+#b.set_aspect(SPECT.sagittal_aspect)
+plt.show()
+
+b = plt.subplot()
+plt.imshow(a_SPECT.axial[80])
+#b.set_aspect(SPECT.sagittal_aspect)
+plt.show()
 
 #print(ct.meta) # SPECT Reconstruction Diameter             DS: '613.78558349609'
 # CT Reconstruction Diameter             DS: '366.0'
