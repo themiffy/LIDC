@@ -7,8 +7,8 @@ class DicomVolumeCT():
 
         # pixel aspects, assuming all slices are the same
         self.coronal_aspect = meta.SliceThickness/meta.PixelSpacing[0]
-        self.axial_aspect = meta.PixelSpacing[1]/meta.SliceThickness * 16
-        self.sagittal_aspect = meta.PixelSpacing[1]/meta.PixelSpacing[0]
+        self.sagittal_aspect = meta.PixelSpacing[1]/meta.SliceThickness * 16
+        self.axial_aspect = meta.PixelSpacing[1]/meta.PixelSpacing[0]
 
         # create 3D array
         self.img_shape = list(pixel_array[0].shape)
@@ -24,12 +24,12 @@ class DicomVolumeCT():
         self.sagittal = []
         for i, slice in enumerate(self.volume):
             self.coronal.append(self.volume[i,:,:].T)
-            self.axial.append(self.volume[:,i,:])
+            self.sagittal.append(self.volume[:,i,:])
             if i < self.volume.shape[2]:
-                self.sagittal.append(self.volume[:,:,i])
+                self.axial.append(self.volume[:,:,i])
 
-        self.axial = np.rot90(self.axial, axes = (2, 1))
-        self.sagittal = np.rot90(self.sagittal, axes = (2, 1), k = 2)
+        self.sagittal = np.rot90(self.sagittal, axes = (2, 1))
+        self.axial = np.rot90(self.axial, axes = (2, 1), k = 2)
         # преобразовать pixel_array
 
 class DicomVolumeSPECT():
@@ -39,8 +39,8 @@ class DicomVolumeSPECT():
 
         # pixel aspects, assuming all slices are the same
         self.coronal_aspect = meta.SliceThickness/meta.PixelSpacing[0]
-        self.axial_aspect = meta.PixelSpacing[1]/meta.SliceThickness #* 16
-        self.sagittal_aspect = meta.PixelSpacing[1]/meta.PixelSpacing[0]
+        self.sagittal_aspect = meta.PixelSpacing[1]/meta.SliceThickness #* 16
+        self.axial_aspect = meta.PixelSpacing[1]/meta.PixelSpacing[0]
 
         # create 3D array
         self.img_shape = list(pixel_array[0].shape)
@@ -56,11 +56,11 @@ class DicomVolumeSPECT():
         self.sagittal = []
         for i, slice in enumerate(self.volume):
             self.coronal.append(self.volume[i,:,:])
-            self.axial.append(self.volume[:,i,:].T)
+            self.sagittal.append(self.volume[:,i,:].T)
             if i < self.volume.shape[2]:
-                self.sagittal.append(self.volume[:,:,self.volume.shape[2] - i - 1])
+                self.axial.append(self.volume[:,:,self.volume.shape[2] - i - 1])
 
         self.coronal = np.rot90(self.coronal, axes = (2, 1), k = 3)
-        self.axial = np.rot90(self.axial, axes = (2, 1), k = 2)
         self.sagittal = np.rot90(self.sagittal, axes = (2, 1), k = 2)
+        self.axial = np.rot90(self.axial, axes = (2, 1), k = 2)
         # преобразовать pixel_array

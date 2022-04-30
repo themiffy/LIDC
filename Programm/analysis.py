@@ -19,34 +19,37 @@ def analyze(CT, SPECT, MASK = ''):
     a2.set_aspect(CT.coronal_aspect)
 
     a1 = plt.subplot(2, 2, 2)
-    plt.imshow(CT.axial[sl])
-    a1.set_aspect(CT.axial_aspect)
+    plt.imshow(CT.sagittal[sl])
+    a1.set_aspect(CT.sagittal_aspect)
 
     a3 = plt.subplot(2, 2, 3)
-    plt.imshow(CT.sagittal[sl//4])
-    a3.set_aspect(CT.sagittal_aspect)
+    plt.imshow(CT.axial[sl//4])
+    a3.set_aspect(CT.axial_aspect)
+    
     plt.show()
 
 #----------------------------------------
     spect_slice = int((128 - 128/(SPECT.meta.ReconstructionDiameter/CT.meta.ReconstructionDiameter)) 
                         / 2 + sl/(SPECT.meta.ReconstructionDiameter/CT.meta.ReconstructionDiameter*4))
+
+
     a2 = plt.subplot(2, 2, 1)
     plt.imshow(SPECT.coronal[spect_slice])
     a2.set_aspect(SPECT.coronal_aspect)
 
     a1 = plt.subplot(2, 2, 2)
-    plt.imshow(SPECT.axial[spect_slice])
-    a1.set_aspect(SPECT.axial_aspect)
+    plt.imshow(SPECT.sagittal[spect_slice])
+    a1.set_aspect(SPECT.sagittal_aspect)
 
     a3 = plt.subplot(2, 2, 3)
-    plt.imshow(SPECT.sagittal[spect_slice])
-    a3.set_aspect(SPECT.sagittal_aspect)
+    plt.imshow(SPECT.axial[spect_slice])
+    a3.set_aspect(SPECT.axial_aspect)
 
 
     plt.show()
 
-    img = resize(CT.axial[sl], (256, 256), mode='constant', preserve_range=True)
-    img2 = resize(SPECT.axial[spect_slice], (256, 256), mode='constant', preserve_range=True)
+    img = resize(CT.coronal[sl], (256, 256), mode='constant', preserve_range=True)
+    img2 = resize(SPECT.coronal[spect_slice], (256, 256), mode='constant', preserve_range=True)
     #img2 = rotate(img2, 180)
     img2 = cv2_clipped_zoom(img2, SPECT.meta.ReconstructionDiameter/CT.meta.ReconstructionDiameter)
     affine = AffineTransform(translation = (5, 40))
