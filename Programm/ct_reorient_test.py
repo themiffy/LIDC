@@ -66,5 +66,10 @@ print(analyze(ct, SPECT))
 #print(ct.meta, '\n')
 #print(SPECT.meta.Rows * SPECT.meta.PixelSpacing[0], '\n') # PixelSpacing
 #print(ct.meta.Rows * ct.meta.PixelSpacing[0])
+
+print(SPECT.meta.PixelSpacing[0], '\n')
+print(ct.meta.PixelSpacing[0])
+
 #print(SPECT.meta[0x0020, 0x0032]) # ImagePositionPatient
-#print(SPECT.meta.DetectorInformationSequence[0].ImagePositionPatient)
+print(SPECT.meta.DetectorInformationSequence[0].ImagePositionPatient)
+print(temp[126].ImagePositionPatient)

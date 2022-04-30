@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 from skimage.transform import resize 
 from skimage.transform import rotate
+from skimage.transform import AffineTransform, warp
 from clipped_zoom import cv2_clipped_zoom
 
 def analyze(CT, SPECT, MASK = ''):
-    sl = 90*4
+    sl = 85*4
     print('CT: ', len(CT.pixel_array), CT.pixel_array[0].shape)
     print('SPECT: ', len(SPECT.pixel_array), SPECT.pixel_array[0].shape)
    
@@ -44,11 +45,12 @@ def analyze(CT, SPECT, MASK = ''):
 
     plt.show()
 
-    img = resize(CT.sagittal[sl//4], (256, 256), mode='constant', preserve_range=True)
-    img2 = resize(SPECT.sagittal[spect_slice], (256, 256), mode='constant', preserve_range=True)
+    img = resize(CT.axial[sl], (256, 256), mode='constant', preserve_range=True)
+    img2 = resize(SPECT.axial[spect_slice], (256, 256), mode='constant', preserve_range=True)
     #img2 = rotate(img2, 180)
     img2 = cv2_clipped_zoom(img2, SPECT.meta.ReconstructionDiameter/CT.meta.ReconstructionDiameter)
-    
+    affine = AffineTransform(translation = (5, 40))
+    img2 = warp(img2, affine.params, mode = 'constant')
     alpha = 0.1 # amount of transparency
     smth = img * alpha + img2 * (1 - alpha)
 

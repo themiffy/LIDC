@@ -58,7 +58,7 @@ class DicomVolumeSPECT():
             self.coronal.append(self.volume[i,:,:])
             self.axial.append(self.volume[:,i,:].T)
             if i < self.volume.shape[2]:
-                self.sagittal.append(self.volume[:,:,i])
+                self.sagittal.append(self.volume[:,:,self.volume.shape[2] - i - 1])
 
         self.coronal = np.rot90(self.coronal, axes = (2, 1), k = 3)
         self.axial = np.rot90(self.axial, axes = (2, 1), k = 2)
