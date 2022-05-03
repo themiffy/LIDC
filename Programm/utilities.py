@@ -3,7 +3,7 @@ from skimage.transform import resize
 from skimage.transform import rotate
 from skimage.transform import AffineTransform, warp
 from clipped_zoom import cv2_clipped_zoom
-from dicomVolume import DicomVolumeSPECT, DicomVolumeCT, aCT, aSPECT
+from dicomVolume import DicomVolumeSPECT, DicomVolumeCT, aSLICES
 
 def analyze(CT, SPECT, MASK = ''):
     sl = 126*4
@@ -64,8 +64,8 @@ def analyze(CT, SPECT, MASK = ''):
 
 def align(CT, SPECT):
 
-    a_CT = aCT()
-    a_SPECT = aSPECT()
+    a_CT = aSLICES()
+    a_SPECT = aSLICES()
     affine = AffineTransform(translation = (5, 40))
 
     for i in range(len(SPECT.coronal) - 1): # -1??
@@ -99,3 +99,8 @@ def align(CT, SPECT):
         a_SPECT.axial.append(spect_axial)
 
     return a_CT, a_SPECT
+
+def structuralize_dataset(ar_dicoms):
+
+    # они ещё сортированы должны быть!
+    return {'ключ - номер серии': 'значение - список с дайкомами'}

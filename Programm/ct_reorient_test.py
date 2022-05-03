@@ -56,7 +56,7 @@ plt.imshow(SPECT.sagittal[30])
 b.set_aspect(SPECT.sagittal_aspect)
 plt.show()
 '''
-from analysis import analyze, align
+from utilities import analyze, align
 print(analyze(ct, SPECT))
 a_CT, a_SPECT = align(ct, SPECT)
 
