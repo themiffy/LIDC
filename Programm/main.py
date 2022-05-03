@@ -93,25 +93,42 @@ if __name__ == "__main__":
     
     btn1 = Button(master, text="Загрузить изображение", command = btn1_com, padx=5, pady=5)
     #btn1.grid(column = 0, row = 0)
-    btn1.pack()
+    btn1.place(x = 350, y = 450)
 
-    btn2 = Button(master, text="Открыть папку с DICOM", command = openCT, padx=5, pady=5)
+    btn2 = Button(master, text="   Открыть папку с DICOM    ", command = openCT, padx=5, pady=5)
     #btn2.grid(column = 0, row = 1)
-    btn2.pack()
-   
-
-    chooseCT = ttk.Combobox(master, values = [], state="disabled", postcommand=refreshValues)
-    chooseCT.bind("<<ComboboxSelected>>", study_selected)
-    chooseCT.pack()
+    btn2.place(x = 6, y = 6)
 
     filecount = Label(master)
-    filecount.pack()
+    filecount.place(x = 20, y = 35)
+
+    ctlabel = Label(master, text = 'Серия КТ:')
+    ctlabel.place(x = 20, y = 80)
+    i = 30
+    chooseCT = ttk.Combobox(master, values = [], state="disabled", postcommand=refreshValues)
+    chooseCT.bind("<<ComboboxSelected>>", study_selected)
+    chooseCT.place(x = 5, y = 105)
+
+    spectlabel1 = Label(master, text = 'Серия ОФЭКТ:')
+    spectlabel1.place(x = 20, y = 135)
+
+    chooseSPECT = ttk.Combobox(master, values = [], state="disabled")
+    #chooseSPECT.bind("<<ComboboxSelected>>", study_selected)
+    chooseSPECT.place(x = 5, y = 160)
+
+    spectlabel2 = Label(master, text = 'Файл ОФЭКТ:')
+    spectlabel2.place(x = 20, y = 195)
+
+    chooseSPECTfile = ttk.Combobox(master, values = [], state="disabled")
+    #chooseSPECT.bind("<<ComboboxSelected>>", study_selected)
+    chooseSPECTfile.place(x = 5, y = 220)
+    
     
 
     canvas = Canvas(master, width = 256, height = 256)
-    canvas.pack()
+    canvas.place(x = 235, y = 5)
 
     study_info = Label(master)
-    study_info.pack()
+    study_info.place(x = 265, y = 265)
 
     master.mainloop()
