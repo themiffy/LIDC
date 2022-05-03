@@ -36,7 +36,6 @@ if __name__ == "__main__":
         canvas.create_image(0,0, anchor="nw", image=img)
         study_info.config(text = f'Изображений в серии: {len(cur_study)},\n' +
                                 f'Модальность: {cur_study[0].Modality}')
-        print(cur_study[0])
 
 
     ######################################## Buttons commands #####################################
