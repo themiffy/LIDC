@@ -1,3 +1,4 @@
+from sqlite3 import DatabaseError
 import matplotlib.pyplot as plt
 import pydicom as dicom
 import glob
@@ -13,12 +14,13 @@ from PIL import Image, ImageTk
 from predict import make_prediction
 from utilities import structuralize_dataset
 
+global DATA
 
 if __name__ == "__main__":
 
     def refreshValues():
         try:
-            chooseCT['values'] = serNumbers
+            chooseCT['values'] = list(serNumbers)
             
         except:
             print('Choose files first!')
@@ -27,11 +29,7 @@ if __name__ == "__main__":
         global img
         global canvas
 
-        # TODO : достать картинку из серии
-        chooseCT.get() # по этому ключу. Это номер серии!
-
-        array = ar_dicoms[50].pixel_array #temporary
-
+        array = DATA[int(chooseCT.get())][len(DATA[int(chooseCT.get())])//2].pixel_array #первый ключ - серия, второй - номер снимка (средний снимок)
         
         img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
         canvas.create_image(0,0, anchor="nw", image=img)
@@ -53,29 +51,30 @@ if __name__ == "__main__":
         plt.show()
 
     def openCT():
-
         filenames = glob.glob(filedialog.askdirectory() + '/*') # выбираю папку и записываю имена файлов
-        global ar_dicoms
-        ar_dicoms = []
 
+        global ar_dicoms
+        global DATA
         global serNumbers
         serNumbers = set()
-        for file in filenames: 
+        ar_dicoms = []
+
+        for file in filenames: # Читаю dicom
             try:
                 ar_dicoms.append(dicom.dcmread(file))
                 serNumbers.add(ar_dicoms[-1].SeriesNumber)
             except:
-                print('File', file.split('/')[-1], 'is not DICOM!')
+                print('\nFile', file.split('/')[-1], 'is not DICOM!\n')
 
-        serNumbers = [i for i in serNumbers]
-        chooseCT['state'] = 'readonly'
-        print(serNumbers)
         
+        DATA = structuralize_dataset(ar_dicoms, serNumbers)
 
+
+        # Вывожу инфу в интерфейс
+        chooseCT['state'] = 'readonly'
         filecount.config(text = f'Количество файлов {len(ar_dicoms)}\n' + 
                                 f'Количество серий {len(serNumbers)}:\n') # Информация о файлах
-
-        filecount.pack()
+        
 
         
 
@@ -96,11 +95,15 @@ if __name__ == "__main__":
     btn2 = Button(master, text="Открыть папку с DICOM", command = openCT, padx=5, pady=5)
     #btn2.grid(column = 0, row = 1)
     btn2.pack()
-    filecount = Label(master)
+   
 
     chooseCT = ttk.Combobox(master, values = [], state="disabled", postcommand=refreshValues)
     chooseCT.bind("<<ComboboxSelected>>", study_selected)
     chooseCT.pack()
+
+    filecount = Label(master)
+    filecount.pack()
+    
 
     canvas = Canvas(master, width = 256, height = 256)
     canvas.pack()

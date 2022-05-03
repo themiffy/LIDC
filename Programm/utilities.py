@@ -100,7 +100,14 @@ def align(CT, SPECT):
 
     return a_CT, a_SPECT
 
-def structuralize_dataset(ar_dicoms):
+def structuralize_dataset(ar_dicoms, keys):
+    data = {key: [] for key in keys}
 
+    for dcm in ar_dicoms:
+        data[dcm.SeriesNumber].append(dcm)
+
+    for key, array in data.items():
+        array.sort(key = lambda x: x.InstanceNumber) # сортировка по номеру в серии
+    
     # они ещё сортированы должны быть!
-    return {'ключ - номер серии': 'значение - список с дайкомами'}
+    return data
