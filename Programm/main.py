@@ -29,10 +29,14 @@ if __name__ == "__main__":
         global img
         global canvas
 
-        array = DATA[int(chooseCT.get())][len(DATA[int(chooseCT.get())])//2].pixel_array #первый ключ - серия, второй - номер снимка (средний снимок)
+        cur_study = DATA[int(chooseCT.get())]
+        array = cur_study[len(DATA[int(chooseCT.get())])//2].pixel_array #первый ключ - серия, второй - номер снимка (средний снимок)
         
         img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
         canvas.create_image(0,0, anchor="nw", image=img)
+        study_info.config(text = f'Изображений в серии: {len(cur_study)},\n' +
+                                f'Модальность: {cur_study[0].Modality}')
+        print(cur_study[0])
 
 
     ######################################## Buttons commands #####################################
@@ -107,5 +111,8 @@ if __name__ == "__main__":
 
     canvas = Canvas(master, width = 256, height = 256)
     canvas.pack()
+
+    study_info = Label(master)
+    study_info.pack()
 
     master.mainloop()
