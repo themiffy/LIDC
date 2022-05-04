@@ -18,27 +18,56 @@ global DATA
 
 if __name__ == "__main__":
 
-    def refreshValues():
+    ######################################## Event Handlers #####################################
+
+    def refresh_study():
         try:
             chooseCT['values'] = list(serNumbers)
+            chooseSPECT['values'] = list(serNumbers)
             
         except:
             print('Choose files first!')
 
-    def study_selected(*args):
+    def refresh_files():
+
+        pass
+
+    def ct_study_selected(*args):
         global img
         global canvas
 
         cur_study = DATA[int(chooseCT.get())]
-        array = cur_study[len(DATA[int(chooseCT.get())])//2].pixel_array #первый ключ - серия, второй - номер снимка (средний снимок)
-        
-        img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
+        img = make_image(cur_study)
+
         canvas.create_image(0,0, anchor="nw", image=img)
         study_info.config(text = f'Изображений в серии: {len(cur_study)},\n' +
                                 f'Модальность: {cur_study[0].Modality}')
 
+    def spect_study_selected(*args):
+        global img
+        global canvas
+        cur_study = DATA[int(chooseSPECT.get())]
+        img = make_image(cur_study)
 
-    ######################################## Buttons commands #####################################
+        canvas.create_image(0,0, anchor="nw", image=img)
+        study_info.config(text = f'Изображений в серии: {len(cur_study)},\n' +
+                                f'Модальность: {cur_study[0].Modality}')
+
+        chooseSPECTfile['values'] = [i for i in range(len(cur_study))]#DATA[int(chooseSPECT.get())] # выбрали серию - обновляем список файлов
+
+    def spect_file_selected(*args):
+        global img
+        global canvas
+        cur_study = DATA[int(chooseSPECT.get())][int(chooseSPECTfile.get())]
+
+        img = make_image(cur_study)
+        canvas.create_image(0,0, anchor="nw", image=img)
+        image_count = f'{len(cur_study.pixel_array)}' if cur_study.pixel_array.shape == 3 else '1'
+        try:
+            study_info.config(text = f'Снимков в файле: {image_count}\n' +
+                                    f'Вид: {cur_study.DetectorInformationSequence[0].ViewCodeSequence[0].CodeMeaning}') #.ViewCodeSequence[0]
+        except:
+            study_info.config(text = f'Снимков в файле: {image_count}')
 
     def btn1_com():
         global file
@@ -53,7 +82,7 @@ if __name__ == "__main__":
         axarr[2].imshow(pred * alpha + image * (1-alpha))
         plt.show()
 
-    def openCT():
+    def button_open_study():
         filenames = glob.glob(filedialog.askdirectory() + '/*') # выбираю папку и записываю имена файлов
 
         global ar_dicoms
@@ -69,23 +98,29 @@ if __name__ == "__main__":
             except:
                 print('\nFile', file.split('/')[-1], 'is not DICOM!\n')
 
-        
         DATA = structuralize_dataset(ar_dicoms, serNumbers)
-
 
         # Вывожу инфу в интерфейс
         chooseCT['state'] = 'readonly'
+        chooseSPECT['state'] = 'readonly'
+        chooseSPECTfile['state'] = 'readonly'
+
         filecount.config(text = f'Количество файлов {len(ar_dicoms)}\n' + 
                                 f'Количество серий {len(serNumbers)}:\n') # Информация о файлах
-        
-
-        
-
-        
-        
 
     ###############################################################################################
 
+    def make_image(cur_study):
+        try: #первый ключ - серия, второй - номер снимка (средний снимок)
+            array = cur_study[len(cur_study)//2].pixel_array # это если серия
+        except:
+            if len(cur_study.pixel_array.shape) == 3:
+                array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл офэкт
+            else:
+                array = cur_study.pixel_array # если это файл КТ
+        
+        img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
+        return img
 
     master = Tk()
     master.title('Программа')
@@ -95,7 +130,7 @@ if __name__ == "__main__":
     #btn1.grid(column = 0, row = 0)
     btn1.place(x = 350, y = 450)
 
-    btn2 = Button(master, text="   Открыть папку с DICOM    ", command = openCT, padx=5, pady=5)
+    btn2 = Button(master, text="   Открыть папку с DICOM    ", command = button_open_study, padx=5, pady=5)
     #btn2.grid(column = 0, row = 1)
     btn2.place(x = 6, y = 6)
 
@@ -104,24 +139,24 @@ if __name__ == "__main__":
 
     ctlabel = Label(master, text = 'Серия КТ:')
     ctlabel.place(x = 20, y = 80)
-    i = 30
-    chooseCT = ttk.Combobox(master, values = [], state="disabled", postcommand=refreshValues)
-    chooseCT.bind("<<ComboboxSelected>>", study_selected)
+
+    chooseCT = ttk.Combobox(master, values = [], state="disabled", postcommand=refresh_study)
+    chooseCT.bind("<<ComboboxSelected>>", ct_study_selected)
     chooseCT.place(x = 5, y = 105)
 
     spectlabel1 = Label(master, text = 'Серия ОФЭКТ:')
     spectlabel1.place(x = 20, y = 135)
 
-    chooseSPECT = ttk.Combobox(master, values = [], state="disabled")
-    #chooseSPECT.bind("<<ComboboxSelected>>", study_selected)
-    chooseSPECT.place(x = 5, y = 160)
+    chooseSPECT = ttk.Combobox(master, values = [], state="disabled", postcommand = refresh_files)
+    chooseSPECT.bind("<<ComboboxSelected>>", spect_study_selected)
+    chooseSPECT.place(x = 5, y = 160) # тут хранится ключ исследования ОФЭКТ (при обращении конвертировать в int)
 
     spectlabel2 = Label(master, text = 'Файл ОФЭКТ:')
     spectlabel2.place(x = 20, y = 195)
 
     chooseSPECTfile = ttk.Combobox(master, values = [], state="disabled")
-    #chooseSPECT.bind("<<ComboboxSelected>>", study_selected)
-    chooseSPECTfile.place(x = 5, y = 220)
+    chooseSPECTfile.bind("<<ComboboxSelected>>", spect_file_selected)
+    chooseSPECTfile.place(x = 5, y = 220) # тут хранится индекс! файла в текущем исследовании (при обращении  конвертировать в int)
     
     
 
