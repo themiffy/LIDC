@@ -11,8 +11,9 @@ from tkinter import filedialog
 
 from PIL import Image, ImageTk
 
-from predict import make_prediction
-from utilities import structuralize_dataset
+from predict import make_prediction, segment
+from utilities import structuralize_dataset, align
+from dicomVolume import DicomVolumeSPECT, DicomVolumeCT
 
 global DATA
 
@@ -62,10 +63,10 @@ if __name__ == "__main__":
 
         img = make_image(cur_study)
         canvas.create_image(0,0, anchor="nw", image=img)
-        image_count = f'{len(cur_study.pixel_array)}' if cur_study.pixel_array.shape == 3 else '1'
+        image_count = f'{len(cur_study.pixel_array)}' if len(cur_study.pixel_array.shape) == 3 else '1'
         try:
             study_info.config(text = f'Снимков в файле: {image_count}\n' +
-                                    f'Вид: {cur_study.DetectorInformationSequence[0].ViewCodeSequence[0].CodeMeaning}') #.ViewCodeSequence[0]
+                                    f'Вид: {cur_study.DetectorInformationSequence[0].ViewCodeSequence[0].CodeMeaning}')
         except:
             study_info.config(text = f'Снимков в файле: {image_count}')
 
@@ -107,8 +108,37 @@ if __name__ == "__main__":
 
         filecount.config(text = f'Количество файлов {len(ar_dicoms)}\n' + 
                                 f'Количество серий {len(serNumbers)}:\n') # Информация о файлах
+    
+    def button_analyze(): # начинается жесть
+        global DATA
+        results_window = Toplevel(master)
+        results_window.title("Результаты")
+        results_window.geometry('700x700')
+        # подгодовка КТ
+        ct_study = DATA[int(chooseCT.get())]
+        slices = []
+        for el in ct_study:
+            slices.append(el.pixel_array)
+        CT = DicomVolumeCT(slices, ct_study[0]) # 1-Изображения 2-мета
+
+        # подготовка ОФЭКТ
+        spect_file = DATA[int(chooseSPECT.get())][int(chooseSPECTfile.get())]
+        try:
+            SPECT = DicomVolumeSPECT(spect_file.pixel_array, spect_file)
+        except:
+            print('Некорректное ОФЭКТ исследование')
+
+        # совмещение
+        a_CT, a_SPECT = align(CT, SPECT) # это объекты кт и офэкт подогнанные друг под друга 256х256
+
+        mask = segment(a_CT.coronal)
+
+        plt.imshow(mask[30])
+        plt.show()
+
 
     ###############################################################################################
+    ##################################### Просто функции ##########################################
 
     def make_image(cur_study):
         try: #первый ключ - серия, второй - номер снимка (средний снимок)
@@ -122,13 +152,15 @@ if __name__ == "__main__":
         img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
         return img
 
+    ###############################################################################################
+
     master = Tk()
     master.title('Программа')
     master.geometry('500x500')
     
     btn1 = Button(master, text="Загрузить изображение", command = btn1_com, padx=5, pady=5)
     #btn1.grid(column = 0, row = 0)
-    btn1.place(x = 350, y = 450)
+    btn1.place(x = 350, y = 470)
 
     btn2 = Button(master, text="   Открыть папку с DICOM    ", command = button_open_study, padx=5, pady=5)
     #btn2.grid(column = 0, row = 1)
@@ -158,12 +190,14 @@ if __name__ == "__main__":
     chooseSPECTfile.bind("<<ComboboxSelected>>", spect_file_selected)
     chooseSPECTfile.place(x = 5, y = 220) # тут хранится индекс! файла в текущем исследовании (при обращении  конвертировать в int)
     
-    
-
     canvas = Canvas(master, width = 256, height = 256)
     canvas.place(x = 235, y = 5)
 
     study_info = Label(master)
     study_info.place(x = 265, y = 265)
 
+    btn3 = Button(master, text="Расчёт", command = button_analyze, padx=5, pady=5)
+    btn3.place(x = 300, y = 450)
+
+    
     master.mainloop()

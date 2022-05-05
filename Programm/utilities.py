@@ -63,7 +63,7 @@ def analyze(CT, SPECT, MASK = ''):
     return spect_slice
 
 def align(CT, SPECT):
-
+    
     a_CT = aSLICES()
     a_SPECT = aSLICES()
     affine = AffineTransform(translation = (5, 40))
@@ -109,5 +109,4 @@ def structuralize_dataset(ar_dicoms, keys):
     for key, array in data.items():
         array.sort(key = lambda x: x.InstanceNumber) # сортировка по номеру в серии
     
-    # они ещё сортированы должны быть!
     return data
