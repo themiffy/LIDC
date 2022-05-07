@@ -12,7 +12,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from predict import make_prediction, segment
-from utilities import structuralize_dataset, align
+from utilities import structuralize_dataset, align, window_ct
 from dicomVolume import DicomVolumeSPECT, DicomVolumeCT
 
 global DATA
@@ -131,9 +131,9 @@ if __name__ == "__main__":
         # совмещение
         a_CT, a_SPECT = align(CT, SPECT) # это объекты кт и офэкт подогнанные друг под друга 256х256
 
-        mask = segment(a_CT.coronal)
+        mask = segment(a_CT, orient = 'coronal', window_center = -400, window_width = 1500)
 
-        plt.imshow(mask[30])
+        plt.imshow(mask[50])
         plt.show()
 
 
@@ -142,10 +142,13 @@ if __name__ == "__main__":
 
     def make_image(cur_study):
         try: #первый ключ - серия, второй - номер снимка (средний снимок)
-            array = cur_study[len(cur_study)//2].pixel_array # это если серия
+            try:
+                array = window_ct(cur_study[len(cur_study)//2], 1500, -400, 0, 255) # Если это серия КТ
+            except:
+                array = cur_study[len(cur_study)//2].pixel_array # это если серия ОФЭКТ
         except:
             if len(cur_study.pixel_array.shape) == 3:
-                array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл офэкт
+                array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл ОФЭКТ
             else:
                 array = cur_study.pixel_array # если это файл КТ
         

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from skimage.transform import resize 
 from skimage.transform import rotate
 from skimage.transform import AffineTransform, warp
@@ -66,6 +67,9 @@ def align(CT, SPECT):
     
     a_CT = aSLICES()
     a_SPECT = aSLICES()
+    a_CT.meta = CT.meta
+    a_SPECT.meta = SPECT.meta
+
     affine = AffineTransform(translation = (5, 40))
 
     for i in range(len(SPECT.coronal) - 1): # -1??
@@ -110,3 +114,37 @@ def structuralize_dataset(ar_dicoms, keys):
         array.sort(key = lambda x: x.InstanceNumber) # сортировка по номеру в серии
     
     return data
+
+def window_ct(dcm, w, c, ymin, ymax, meta = ''):
+    """Windows a CT slice.
+    http://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.11.2.html
+
+    Args:
+        dcm (pydicom.dataset.FileDataset):
+        w: Window Width parameter.
+        c: Window Center parameter.
+        ymin: Minimum output value.
+        ymax: Maximum output value.
+
+    Returns:
+        Windowed slice.
+    """
+    try:
+        # convert to HU
+        b = dcm.RescaleIntercept
+        m = dcm.RescaleSlope
+        x = m * dcm.pixel_array + b
+    except:
+        b = meta.RescaleIntercept
+        m = meta.RescaleSlope
+        x = m * dcm + b
+    # windowing C.11.2.1.2.1 Default LINEAR Function
+    #
+    y = np.zeros_like(x)
+    y[x <= (c - 0.5 - (w - 1) / 2)] = ymin
+    y[x > (c - 0.5 + (w - 1) / 2)] = ymax
+    y[(x > (c - 0.5 - (w - 1) / 2)) & (x <= (c - 0.5 + (w - 1) / 2))] = \
+        ((x[(x > (c - 0.5 - (w - 1) / 2)) & (x <= (c - 0.5 + (w - 1) / 2))] - (c - 0.5)) / (w - 1) + 0.5) * (
+                ymax - ymin) + ymin
+
+    return y

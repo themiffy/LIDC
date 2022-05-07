@@ -67,6 +67,7 @@ class DicomVolumeSPECT():
 
 class aSLICES():
     def __init__(self):
+        self.meta = 0
         self.coronal = []
         self.axial = []
         self.sagittal = []
