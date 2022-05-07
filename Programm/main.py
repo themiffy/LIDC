@@ -12,7 +12,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from predict import make_prediction, segment
-from utilities import structuralize_dataset, align, window_ct
+from utilities import structuralize_dataset, align, window_ct, calclate_accumulation
 from dicomVolume import DicomVolumeSPECT, DicomVolumeCT
 
 global DATA
@@ -131,10 +131,12 @@ if __name__ == "__main__":
         # совмещение
         a_CT, a_SPECT = align(CT, SPECT) # это объекты кт и офэкт подогнанные друг под друга 256х256
 
-        mask = segment(a_CT, orient = 'coronal', window_center = -400, window_width = 1500)
+        # сегментация
+        masks = segment(a_CT, orient = 'coronal', window_center = -400, window_width = 1500)
 
-        plt.imshow(mask[50])
-        plt.show()
+        # расчёт накоплений
+        calclate_accumulation(a_CT, a_SPECT, masks)
+
 
 
     ###############################################################################################

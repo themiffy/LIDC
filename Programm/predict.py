@@ -22,8 +22,12 @@ def segment(CT, orient, window_center = -400, window_width = 1500):
     if orient == 'coronal':
         windowed_slices = [window_ct(sl, window_width, window_center, 0, 1, meta = CT.meta) for sl in CT.coronal]
         np_slices = np.array(windowed_slices)
-        import matplotlib.pyplot as plt
-        plt.imshow(np_slices[50])
-        plt.show()
+
+        # debug
+        #import matplotlib.pyplot as plt
+        #plt.imshow(np_slices[50])
+        #plt.show()
+        #
+        
         pred_argmax = np.argmax(model.predict(np_slices), axis=3)
         return pred_argmax
