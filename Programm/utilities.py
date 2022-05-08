@@ -161,46 +161,23 @@ def calclate_accumulation(CT, SPECT, MASKS):
     l_bot_masks = np.copy(MASKS)
     l_bot_masks[l_bot_masks != 5] = 0
 
-
-
-
+    '''
     smth = r_mid_masks * SPECT.coronal
     smth2 = r_bot_masks * SPECT.coronal
 
-
-
     a1 = plt.subplot(2, 2, 1)
-    #plt.imshow(SPECT.coronal[60])
     plt.imshow(smth[60])
     a2 = plt.subplot(2, 2, 2)
     plt.imshow(smth2[60])
     a3 = plt.subplot(2, 2, 3)
     plt.imshow(CT.coronal[60])
     plt.show()
-
+    '''
+    
     r_top = np.sum(r_top_masks * SPECT.coronal)
     r_mid = np.sum(r_mid_masks * SPECT.coronal)
     r_bot = np.sum(r_bot_masks * SPECT.coronal)
     l_top = np.sum(l_top_masks * SPECT.coronal)
     l_bot = np.sum(l_bot_masks * SPECT.coronal)
-    
-    '''
-    for n, slice in enumerate(SPECT.coronal):
-        for i in range(len(slice[0])):
-            for j in range(len(slice[0])):
-                if MASKS[n][i][j] == 1:
-                    r_top += slice[i][j]
-                elif MASKS[n][i][j] == 2:
-                    r_mid += slice[i][j]
-                elif MASKS[n][i][j] == 3:
-                    r_bot += slice[i][j]
-                elif MASKS[n][i][j] == 4:
-                    l_top += slice[i][j]
-                elif MASKS[n][i][j] == 5:
-                    l_bot += slice[i][j]
-    '''
-    print('l_top', l_top)
-    print('l_bot', l_bot)
-    print('r_top', r_top)
-    print('r_mid', r_mid)
-    print('r_bot', r_bot)
+
+    return r_top, r_mid, r_bot, l_top, l_bot

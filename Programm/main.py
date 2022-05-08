@@ -16,6 +16,8 @@ from utilities import structuralize_dataset, align, window_ct, calclate_accumula
 from dicomVolume import DicomVolumeSPECT, DicomVolumeCT
 
 global DATA
+WINDOW_CENTER = -400
+WINDOW_WIDTH = 1500
 
 if __name__ == "__main__":
 
@@ -113,7 +115,7 @@ if __name__ == "__main__":
         global DATA
         results_window = Toplevel(master)
         results_window.title("Результаты")
-        results_window.geometry('700x700')
+        results_window.geometry('532x532')
         # подгодовка КТ
         ct_study = DATA[int(chooseCT.get())]
         slices = []
@@ -132,27 +134,60 @@ if __name__ == "__main__":
         a_CT, a_SPECT = align(CT, SPECT) # это объекты кт и офэкт подогнанные друг под друга 256х256
 
         # сегментация
-        masks = segment(a_CT, orient = 'coronal', window_center = -400, window_width = 1500)
+        #masks = segment(a_CT, orient = 'coronal', window_center = WINDOW_CENTER, window_width = WINDOW_WIDTH)
 
         # расчёт накоплений
-        calclate_accumulation(a_CT, a_SPECT, masks)
+        #r_top, r_mid, r_bot, l_top, l_bot = calclate_accumulation(a_CT, a_SPECT, masks)
 
+        # Вывод в интерфейс
+        l_t_canvas = Canvas(results_window, width = 256, height = 256) # левый верхний снимок
+        l_t_canvas.place(x = 5, y = 5)
+        wind_l_t = window_ct(a_CT.coronal[len(a_CT.coronal)//2], WINDOW_WIDTH, WINDOW_CENTER, 0, 255, a_CT.meta)
+        l_t_img = make_image(wind_l_t, isresult = True)
+        l_t_canvas.create_image(0,0, anchor="nw", image = l_t_img)
 
+        r_t_canvas = Canvas(results_window, width = 256, height = 256) # правый верхний снимок
+        r_t_canvas.place(x = 271, y = 5)
+        wind_r_t = window_ct(a_CT.sagittal[len(a_CT.sagittal)//2], WINDOW_WIDTH, WINDOW_CENTER, 0, 255, a_CT.meta)
+        r_t_img = make_image(wind_r_t, isresult = True)
+        r_t_canvas.create_image(0,0, anchor="nw", image = r_t_img)
+
+        l_b_canvas = Canvas(results_window, width = 256, height = 256) # левый нижний снимок
+        l_b_canvas.place(x = 5, y = 271)
+        wind_l_b = window_ct(a_CT.axial[len(a_CT.axial)//2], WINDOW_WIDTH, WINDOW_CENTER, 0, 255, a_CT.meta)
+        l_b_img = make_image(wind_l_b, isresult = True)
+        l_b_canvas.create_image(0,0, anchor="nw", image = l_b_img)
+        
+        r_top_label = Label(results_window, text = f'r_top: {0}')
+        r_top_label.place(x = 266, y = 266)
+        r_mid_label = Label(results_window, text = f'r_mid: {0}')
+        r_mid_label.place(x = 266, y = 286)
+        r_bot_label = Label(results_window, text = f'r_bot: {0}')
+        r_bot_label.place(x = 266, y = 306)
+        l_top_label = Label(results_window, text = f'l_top: {0}')
+        l_top_label.place(x = 266, y = 326)
+        l_bot_label = Label(results_window, text = f'l_bot: {0}')
+        l_bot_label.place(x = 266, y = 346)
+        
+        results_window.mainloop()
 
     ###############################################################################################
     ##################################### Просто функции ##########################################
 
-    def make_image(cur_study):
-        try: #первый ключ - серия, второй - номер снимка (средний снимок)
-            try:
-                array = window_ct(cur_study[len(cur_study)//2], 1500, -400, 0, 255) # Если это серия КТ
+    def make_image(cur_study, isresult = False):
+        if not isresult:
+            try: #первый ключ - серия, второй - номер снимка (средний снимок)
+                try:
+                    array = window_ct(cur_study[len(cur_study)//2], WINDOW_WIDTH, WINDOW_CENTER, 0, 255) # Если это серия КТ
+                except:
+                    array = cur_study[len(cur_study)//2].pixel_array # это если серия ОФЭКТ
             except:
-                array = cur_study[len(cur_study)//2].pixel_array # это если серия ОФЭКТ
-        except:
-            if len(cur_study.pixel_array.shape) == 3:
-                array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл ОФЭКТ
-            else:
-                array = cur_study.pixel_array # если это файл КТ
+                if len(cur_study.pixel_array.shape) == 3:
+                    array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл ОФЭКТ
+                else:
+                    array = cur_study.pixel_array # если это файл КТ
+        else:
+            array = cur_study
         
         img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
         return img
