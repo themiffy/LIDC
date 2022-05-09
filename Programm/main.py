@@ -72,19 +72,6 @@ if __name__ == "__main__":
         except:
             study_info.config(text = f'Снимков в файле: {image_count}')
 
-    def btn1_com():
-        global file
-        file = filedialog.askopenfilename(filetypes = (("Jpeg images","*.jpg"),("all files","*.*")))
-
-        pred, image = make_prediction(file)
-
-        alpha = 0.2 # amount of transparency
-        f, axarr = plt.subplots(1,3)
-        axarr[0].imshow(pred)
-        axarr[1].imshow(image)
-        axarr[2].imshow(pred * alpha + image * (1-alpha))
-        plt.show()
-
     def button_open_study():
         filenames = glob.glob(filedialog.askdirectory() + '/*') # выбираю папку и записываю имена файлов
 
@@ -170,18 +157,10 @@ if __name__ == "__main__":
         results_window.mainloop()
 
     ###############################################################################################
-    ##################################### Просто функции ##########################################
-
-
-    ###############################################################################################
 
     master = Tk()
     master.title('Программа')
-    master.geometry('500x500')
-    
-    btn1 = Button(master, text="Загрузить изображение", command = btn1_com, padx=5, pady=5)
-    #btn1.grid(column = 0, row = 0)
-    btn1.place(x = 350, y = 470)
+    master.geometry('500x320')
 
     btn2 = Button(master, text="   Открыть папку с DICOM    ", command = button_open_study, padx=5, pady=5)
     #btn2.grid(column = 0, row = 1)
@@ -217,8 +196,8 @@ if __name__ == "__main__":
     study_info = Label(master)
     study_info.place(x = 265, y = 265)
 
-    btn3 = Button(master, text="Расчёт", command = button_analyze, padx=5, pady=5)
-    btn3.place(x = 300, y = 450)
+    btn3 = Button(master, text="Расчёт", command = button_analyze, padx=77, pady=5)
+    btn3.place(x = 5, y = 270)
 
     
     master.mainloop()
