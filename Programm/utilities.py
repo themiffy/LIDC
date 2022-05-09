@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 from skimage.transform import resize 
 from skimage.transform import rotate
 from skimage.transform import AffineTransform, warp
 from clipped_zoom import cv2_clipped_zoom
 from dicomVolume import DicomVolumeSPECT, DicomVolumeCT, aSLICES
+from PIL import Image, ImageTk
+WINDOW_CENTER = -400
+WINDOW_WIDTH = 1500
 
 def analyze(CT, SPECT, MASK = ''):
     sl = 126*4
@@ -115,7 +119,7 @@ def structuralize_dataset(ar_dicoms, keys):
     
     return data
 
-def window_ct(dcm, w, c, ymin, ymax, meta = ''):
+def window_ct(dcm, w = 1500, c = -400, ymin = 0, ymax = 255, meta = ''):
     """Windows a CT slice.
     http://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.11.2.html
 
@@ -161,19 +165,6 @@ def calclate_accumulation(CT, SPECT, MASKS):
     l_bot_masks = np.copy(MASKS)
     l_bot_masks[l_bot_masks != 5] = 0
 
-    '''
-    smth = r_mid_masks * SPECT.coronal
-    smth2 = r_bot_masks * SPECT.coronal
-
-    a1 = plt.subplot(2, 2, 1)
-    plt.imshow(smth[60])
-    a2 = plt.subplot(2, 2, 2)
-    plt.imshow(smth2[60])
-    a3 = plt.subplot(2, 2, 3)
-    plt.imshow(CT.coronal[60])
-    plt.show()
-    '''
-    
     r_top = np.sum(r_top_masks * SPECT.coronal)
     r_mid = np.sum(r_mid_masks * SPECT.coronal)
     r_bot = np.sum(r_bot_masks * SPECT.coronal)
@@ -181,3 +172,50 @@ def calclate_accumulation(CT, SPECT, MASKS):
     l_bot = np.sum(l_bot_masks * SPECT.coronal)
 
     return r_top, r_mid, r_bot, l_top, l_bot
+
+def overlay(ct, mask, spect, do_mask = False):
+    if do_mask:
+        colormap = plt.get_cmap('magma')
+        heatmap = (colormap(mask*48) * 2**16).astype(np.uint16)[:,:,:3]
+
+        colormap2 = plt.get_cmap('gray')
+        heatmap2 = (colormap2(ct/512) * 2**16).astype(np.uint16)[:,:,:3]
+        heatmap2 = cv2.cvtColor(heatmap2, cv2.COLOR_RGB2BGR)
+
+        result = cv2.addWeighted(heatmap, 0.9, heatmap2, 1.2, 0)/256
+        result = result.astype(np.uint8)
+        img =  ImageTk.PhotoImage(image=Image.fromarray(result).resize((256,256), resample = Image.NEAREST))
+        return img
+
+    else:
+        colormap = plt.get_cmap('inferno')
+        heatmap = (colormap(spect/768) * 2**16).astype(np.uint16)[:,:,:3]
+
+        colormap2 = plt.get_cmap('gray')
+        heatmap2 = (colormap2(ct/512) * 2**16).astype(np.uint16)[:,:,:3]
+        heatmap2 = cv2.cvtColor(heatmap2, cv2.COLOR_RGB2BGR)
+
+        result = cv2.addWeighted(heatmap, 0.9, heatmap2, 1.2, 0)/256
+        result = result.astype(np.uint8)
+        img =  ImageTk.PhotoImage(image=Image.fromarray(result).resize((256,256), resample = Image.NEAREST))
+
+        return img
+
+
+def make_image(cur_study, isresult = False):
+    if not isresult:
+        try: #первый ключ - серия, второй - номер снимка (средний снимок)
+            try:
+                array = window_ct(cur_study[len(cur_study)//2], WINDOW_WIDTH, WINDOW_CENTER, 0, 255) # Если это серия КТ
+            except:
+                array = cur_study[len(cur_study)//2].pixel_array # это если серия ОФЭКТ
+        except:
+            if len(cur_study.pixel_array.shape) == 3:
+                array = cur_study.pixel_array[len(cur_study.pixel_array)//2] # это если файл ОФЭКТ
+            else:
+                array = cur_study.pixel_array # если это файл КТ
+    else:
+        array = cur_study
+        
+    img =  ImageTk.PhotoImage(image=Image.fromarray(array).resize((256,256), resample = Image.NEAREST))
+    return img
