@@ -16,7 +16,7 @@ start_neurons = 16 #(16 - starts to decrease at 60 epoch and should go over 70)
  
 dropout = 0.01
  
-################### data path
+################### data path (use top two if using google colab)
 
 #train_path = '/content/drive/MyDrive/single/train/'
 #test_path = '/content/drive/MyDrive/single/test/'
@@ -127,9 +127,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 checkpointer = tf.keras.callbacks.ModelCheckpoint('best.h5', verbose = 1, save_best_only = True)
  
 #Callbacks
-callbacks = [
-             #tf.keras.callbacks.EarlyStopping(patience=2, monitor='val_loss'), #stop if there's no progress
-             tf.keras.callbacks.TensorBoard(log_dir='logs')] #make logs
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir='logs')] #make logs
 
 ################### train model
 
@@ -140,7 +138,7 @@ results = model.fit(X_train,
                     epochs=70,
                     callbacks=callbacks)
 
-#model.save('test')
+model.save('test')
 
 preds_train = model.predict(X_train[:int(X_train.shape[0]*0.9)], verbose=1)
 preds_val = model.predict(X_train[int(X_train.shape[0]*0.9):], verbose=1)
